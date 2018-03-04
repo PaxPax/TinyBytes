@@ -17,7 +17,10 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'gif', 'mp4'])
 
 app= Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
+"""
+http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ example code was used for the home route and allowed_file
+both are considered free use.
+"""
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
