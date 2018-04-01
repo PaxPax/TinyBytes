@@ -4,19 +4,16 @@ import time
 import os
 
 class Block:
-    def __init__(self, index, time_stamp, data, previous_hash, user_info):
-        self.difficulty = 3
+    def __init__(self, index, time_stamp, data, previous_hash):
+        self.difficulty = 1
         self._nounce = 0
         self._data = data
         self._index = index
         self._time_stamp = time_stamp
         self._previous_hash = previous_hash
-        self._user = user_info
         self._hash = self.calculate_hash()
     
-    @property
-    def user_info(self):
-        return self._user
+
     @property
     def data(self):
         return self._data
@@ -47,8 +44,9 @@ class Block:
     
     def calculate_hash(self):
         sha = hasher.sha256()
-        sha.update((str(self.index) + str(self.time_stamp) + str(self.data) + str(self.nounce) + self.previous_hash + self.user_info).encode('utf-8'))
+        sha.update((str(self.index) + str(self.time_stamp) + str(self.data) + str(self.nounce) + self.previous_hash).encode('utf-8'))
         return sha.hexdigest()
+
     def to_json_block(self):
         create_json = json.dumps({'index': self.index, 'time_stamp': str(self.time_stamp), 'data': self.data, 
         'hash': self.hash, 'previous_hash': self.previous_hash})
@@ -57,7 +55,6 @@ class Block:
     def give_ore(self):
         create_json = json.dumps({'index': self.index, 'time_stamp': str(self.time_stamp), 'data': self.data, 'previous_hash': self.previous_hash})
         return create_json
-        # 'hash': self.hash
 
     def proof_of_work(self):
         curr_difficulty = '0' * self.difficulty
@@ -76,7 +73,7 @@ def create_genesis_block():
         Returns: 
             a newly created block
     """
-    genesis_block = Block(0, "Origin Time", "Origin Data", "Genesis Hash", "Central Node")
+    genesis_block = Block(0, "Origin Time", "Origin Data", "Genesis Hash")
     return genesis_block
 
 class BlockChain:
@@ -102,8 +99,8 @@ class BlockChain:
             list: bytearray if media else b''
         """
         byte_array = None
-        conversion_file = ".././uploaded_data/"
-        current_dir = os.listdir(".././uploaded_data")
+        conversion_file = "../tcoin/uploaded_data/"
+        current_dir = os.listdir("../tcoin/uploaded_data")
         if os.listdir(conversion_file):
             conversion_file += current_dir[0]
         else:
@@ -112,7 +109,7 @@ class BlockChain:
             with open(conversion_file, 'rb') as out_file:
                 new_file = out_file.read()
                 byte_array = bytearray(new_file)
-            os.rename(conversion_file, ".././hashed_data/" + current_dir[0])
+            os.rename(conversion_file, "../tcoin/hashed_data/" + current_dir[0])
         except:
             print("Error"+ conversion_file  + "could not be opened")
         return byte_array
@@ -125,13 +122,12 @@ class BlockChain:
         Return:
             none
         """
-        bsUser = "bsUser"
         tmp_dic = self.bytes_for_consumption()
         for _key in tmp_dic:
             old_block = self.get_current_block()
             next_index = old_block.index +  1
             previous_hash = old_block.hash
-            new_block = Block(next_index, time.time(), tmp_dic[_key], previous_hash, bsUser)
+            new_block = Block(next_index, time.time(), tmp_dic[_key], previous_hash)
             new_block.proof_of_work()
             self.block_chain.append(new_block)
 
@@ -158,10 +154,16 @@ class BlockChain:
                 counter+=1
         tmp_dic['chunk'] = tmp_list
         return tmp_dic
-    
+
     def save_current_chain(self):
         tmp_list = []
         for bs in self.block_chain:
             tmp_list.append(bs.to_json_block())
-        with open('.././current_hash_block/central_node_data.json', 'w') as outfile:
+        with open('../tcoin/current_hash_block/central_node_data.json', 'w') as outfile:
             json.dump(tmp_list, outfile)
+    
+    def get_current_filename(self):
+        current_dir = os.listdir("../tcoin/uploaded_data")
+        if os.listdir(current_dir):
+           return current_dir[0]
+        else: "FNF"

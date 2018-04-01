@@ -1,20 +1,16 @@
 from flask import Flask, request, redirect, url_for, jsonify,send_from_directory, render_template
 from werkzeug.utils import secure_filename
 from block_chain import *
-from pymongo import MongoClient
+import os
 
-UPLOAD_FOLDER = ".././uploaded_data"
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'gif', 'mp3'])
+UPLOAD_FOLDER = "../tcoin/uploaded_data"
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'gif', 'mp3', 'mp4'])
 curr_blockchain = BlockChain()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-client = MongoClient()
-db = client.fileshare
 
 def allowed_file(filename):
-    # db.reviews.insert_one({"uer": "JohnJohn", "passrd": "crapshoot"})
-    # print(db.reviews.find())
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -32,22 +28,29 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return 'file upload worked!'
+            return redirect(url_for('add_block'))
     return '''
     <!doctype html>
     <title>Upload new File</title>
     <h1>Upload new File</h1>
     <form method=post enctype=multipart/form-data>
-    <input type="textfield">Name to associate with file</input>
-      <p><input type=file name=file>
+        <p><input type=file name=file>
          <input type=submit value=Upload>
+        </p>
     </form>
     '''
+@app.route('/add_block', methods=['GET'])
+def add_block():
+    curr_blockchain.append_block_chain()
 
-@app.route('/upload_move', methods=['GET'])
-def upload_move():
-    curr_blockchain.convert_and_move()
-    return "file moved!"
+    return 'File added to chain!'
+
+# @app.route('/add_block', methods=['GET'])
+# def add_block():
+#     curr_blockchain.append_block_chain()
+#     curr_blockchain.convert_and_move()
+#     curr_blockchain.save_current_chain()
+#     return "file moved!"
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
