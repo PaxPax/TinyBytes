@@ -29,20 +29,11 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('add_block'))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-        <p><input type=file name=file>
-         <input type=submit value=Upload>
-        </p>
-    </form>
-    '''
+    return render_template('index.html')
+
 @app.route('/add_block', methods=['GET'])
 def add_block():
     curr_blockchain.append_block_chain()
-
     return 'File added to chain!'
 
 # @app.route('/add_block', methods=['GET'])
